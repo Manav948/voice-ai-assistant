@@ -1,24 +1,39 @@
+import api from '../lib/axios.js'
 import React, { useState } from 'react'
 import { useLocation } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext.jsx';
 const AssistantSetup = () => {
+    const {user , setUser} = useAuth()
     const navigate = useNavigate();
     const location = useLocation();
     const avatar = location.state?.avatar || '';
     const [assistantName, setAssistantName] = useState('');
-    const [searchQuery, setSearchQuery] = useState('');
 
-    const handleContinue = () => {
+    const handleContinue = async () => {
         if (!assistantName) {
             toast.error('Please enter a name for your assistant.');
             return;
         }
-        localStorage.setItem('assistantName', assistantName);
-        localStorage.setItem('assistantAvatar', avatar);
-        console.log('Assistant:', assistantName, avatar);
-        toast.success('Assistant Created:', assistantName, searchQuery, avatar);
-        navigate('/dashboard');
+        if (!avatar) {
+            toast.error('Please Select or upload Valid Assistant avatar');
+        }
+        try {
+            const { data } = await api.put("http://localhost:8001/api/user/assistant",
+                { assistantName, assistantAvatar: avatar },
+                { withCredentials: true }
+            );
+            localStorage.setItem("assistantName", assistantName);
+            localStorage.setItem("assistantAvatar", avatar);
+            if(data?.user) setUser(data.user)
+            toast.success("assistant saved !");
+            navigate("/dashboard")
+        } catch (error) {
+            console.log("Error in Save Assitant function :  ", error);
+            toast.error("Failed to Load Assistant")
+        }
+
     }
     return (
         <div className="min-h-screen bg-black text-white px-6 py-12">

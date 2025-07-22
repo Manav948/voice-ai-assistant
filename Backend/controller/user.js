@@ -15,6 +15,30 @@ export const getUser = async (req, res) => {
   }
 };
 
+export const saveAssitantPrefs = async (req, res) => {
+  try {
+    const { assistantName, assistantAvatar } = req.body;
+    if (!assistantName || !assistantAvatar) {
+      return res.status(400).json({ message: "assistantName & assistantAvatar required" })
+    }
+    const user = await User.findByIdAndUpdate(
+      req.userId,
+      { assistantName, assistantAvatar },
+      { new: true, select: "-password -__v" }
+    )
+    if (!user) {
+      return res.status(404).json({ message: "Avatar not Found" });
+    }
+    return res.status(200).json({
+      messaage: "Assistant Saved",
+      user
+    });
+  } catch (error) {
+    console.log("Error in saveAssistant Function : ", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+}
+
 export const askToAssitant = async (req, res) => {
   try {
     const { command } = req.body;

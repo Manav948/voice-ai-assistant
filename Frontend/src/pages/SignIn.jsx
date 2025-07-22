@@ -5,7 +5,11 @@ import { useState } from "react";
 import api from '../lib/axios.js';
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
+import { Navigate } from "react-router-dom";
+
 export default function SignIn() {
+  const { user,setUser } = useAuth();
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const handleChange = (e) => {
@@ -13,13 +17,25 @@ export default function SignIn() {
   }
   const navigate = useNavigate();
 
+  if (user) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await api.post('api/auth/login', form)
+      const {data} = await api.post('api/auth/login', form,{withCredentials:true});
+      setUser(data)
       toast.success("Login successful!");
-      navigate('/profile');
+      if(data.assistantName){
+        localStorage.setItem("assistantName", data.assistantName);
+        localStorage.setItem("assistantAvatar", data.assistantAvatar || "");
+        navigate("/dashboard");
+      }
+      else {
+        navigate("/profile");
+      }
     } catch (error) {
       console.log("error during login:", error);
       toast.error(error.response?.data?.message || "Login failed.");

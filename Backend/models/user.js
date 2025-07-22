@@ -14,14 +14,18 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    assistantImage: {
-        type: String
+    assistantAvatar: {
+        type: String,
+        default : ""
     },
     assistantName: {
-        type: String
+        type: String,
+        default : ""
     },
     history: [
-        { type: String }
+        { type: Array,
+           default : []
+        }
     ]
 }, { timestamps: true });
 
