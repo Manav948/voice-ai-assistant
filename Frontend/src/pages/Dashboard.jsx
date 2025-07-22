@@ -39,8 +39,11 @@ const Dashboard = () => {
           { command },
           { withCredentials: true }
         );
-        const { response: aiResponse } = res.data;
-        speak(aiResponse);
+        const data = res.data;
+        speak(data.response);
+        if (data.url) {
+          window.open(data.url, '_blank');
+        }
       } catch (err) {
         console.error("Assistant error:", err);
         speak("Sorry, something went wrong.");

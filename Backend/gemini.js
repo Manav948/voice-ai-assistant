@@ -31,7 +31,7 @@ You are NOT Google. You behave like a helpful, voice‑enabled AI assistant.
 Your task: Read the user's message and return ONLY a JSON object (no markdown, no backticks, no explanation) in this exact schema:
 
 {
-  "type": "general" | "google_search" | "youtube_search" | "youtube_play" |
+  "type": "general" | "google_search" | "youtube_open" | "youtube_play" |
           "get_time" | "get_date" | "get_day" | "get_month" | "calculator_open" |
           "instagram_open" | "facebook_open" | "weather_show",
   "userinput": "<cleaned user text to act on>", 
