@@ -25,19 +25,19 @@ export const saveAssitantPrefs = async (req, res) => {
       req.userId,
       { assistantName, assistantAvatar },
       { new: true, select: "-password -__v" }
-    )
+    );
     if (!user) {
       return res.status(404).json({ message: "Avatar not Found" });
     }
     return res.status(200).json({
-      messaage: "Assistant Saved",
+      message: "Assistant Saved",
       user
     });
   } catch (error) {
     console.log("Error in saveAssistant Function : ", error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
-}
+};
 
 export const askToAssitant = async (req, res) => {
   try {
@@ -62,64 +62,57 @@ export const askToAssitant = async (req, res) => {
       return res.status(400).json({ response: "Sorry, I can't understand" });
     }
 
-    const { type, userInput, response } = gemResult;
+    const { type, userinput, response } = gemResult;
+    const inputText = userinput || command; // fallback if undefined
 
     switch (type) {
       case 'get_date':
         return res.json({
           type,
-          userInput,
-          response: `current date is ${moment().format('YYYY-MM-DD')}`,
+          userInput: inputText,
+          response: `Current date is ${moment().format('YYYY-MM-DD')}`,
         });
 
       case 'get_time':
         return res.json({
           type,
-          userInput,
-          response: `current time is ${moment().format('hh:mm A')}`,
+          userInput: inputText,
+          response: `Current time is ${moment().format('hh:mm A')}`,
         });
 
       case 'get_day':
         return res.json({
           type,
-          userInput,
-          response: `today is ${moment().format('dddd')}`,
+          userInput: inputText,
+          response: `Today is ${moment().format('dddd')}`,
         });
 
       case 'get_month':
         return res.json({
           type,
-          userInput,
-          response: `current month is ${moment().format('MMMM')}`,
+          userInput: inputText,
+          response: `Current month is ${moment().format('MMMM')}`,
         });
 
       case 'general':
         return res.status(200).json({
           type,
-          userInput,
-          response: `Here is the information you requested: ${response}`,
+          userInput: inputText,
+          response: response || "Here’s what I found.",
         });
 
       case 'google_search':
         return res.status(200).json({
           type,
-          userInput,
-          response: `Searching for "${userInput}"...`,
-          url: `https://www.google.com/search?q=${encodeURIComponent(userInput)}`,
-        });
-
-      case 'youtube_play':
-        return res.status(200).json({
-          type,
-          userInput,
-          response: `Searching for "${userInput}"...`,
-          url: `https://www.youtube.com/results?search_query=${encodeURIComponent(userInput)}`,
+          userInput: inputText,
+          response: `Searching for "${inputText}"...`,
+          url: `https://www.google.com/search?q=${encodeURIComponent(inputText)}`,
         });
 
       case 'youtube_open':
         return res.status(200).json({
           type,
-          userInput,
+          userInput: inputText,
           response: 'Opening YouTube...',
           url: 'https://www.youtube.com',
         });
@@ -127,7 +120,7 @@ export const askToAssitant = async (req, res) => {
       case 'facebook_open':
         return res.status(200).json({
           type,
-          userInput,
+          userInput: inputText,
           response: 'Opening Facebook...',
           url: 'https://www.facebook.com',
         });
@@ -135,7 +128,7 @@ export const askToAssitant = async (req, res) => {
       case 'instagram_open':
         return res.status(200).json({
           type,
-          userInput,
+          userInput: inputText,
           response: 'Opening Instagram...',
           url: 'https://www.instagram.com',
         });
@@ -143,7 +136,7 @@ export const askToAssitant = async (req, res) => {
       case 'weather_show':
         return res.status(200).json({
           type,
-          userInput,
+          userInput: inputText,
           response: 'Showing weather information...',
           url: 'https://www.weather.com',
         });
@@ -151,12 +144,13 @@ export const askToAssitant = async (req, res) => {
       case 'calculator_open':
         return res.status(200).json({
           type,
-          userInput,
+          userInput: inputText,
           response: 'Opening calculator...',
           url: 'https://www.google.com/search?q=calculator',
         });
+
       default:
-        return res.status(400).json({ response: "sorry, I can't understand" });
+        return res.status(400).json({ response: "Sorry, I can't understand" });
     }
   } catch (error) {
     console.error('Error in askToAssitant:', error);
