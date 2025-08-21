@@ -5,70 +5,41 @@ import axios from "axios";
 import { useAuth } from "../context/AuthContext.jsx";
 
 const Dashboard = () => {
-  const { user } = useAuth()
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [assistantName, setAssistantName] = useState("");
   const [assistantAvatar, setAssistantAvatar] = useState("");
 
-  // Load user’s assistant prefs
+  // Load assistant prefs
   useEffect(() => {
     const name = localStorage.getItem("assistantName");
     const avatar = localStorage.getItem("assistantAvatar");
     if (name && avatar) {
       setAssistantName(name);
       setAssistantAvatar(avatar);
-      return
+      return;
     }
     if (user && user.assistantName && user.assistantAvatar) {
-      setAssistantName(user.assistantName)
-      setAssistantAvatar(user.assistantAvatar)
-      localStorage.setItem("assistantName", user.assistantName)
-      localStorage.setItem("assistantAvatar", user.assistantAvatar)
+      setAssistantName(user.assistantName);
+      setAssistantAvatar(user.assistantAvatar);
+      localStorage.setItem("assistantName", user.assistantName);
+      localStorage.setItem("assistantAvatar", user.assistantAvatar);
     } else if (user) {
-      navigate('/profile');
+      navigate("/profile");
     }
   }, [user, navigate]);
 
-  // derive wake word (lowercase)
+  // derive wake word
   const wakeWord = useMemo(
     () => (assistantName ? assistantName.toLowerCase() : "assistant"),
     [assistantName]
   );
   const { isListening, command, speak } = useVoice(wakeWord);
 
+  // send command to backend (only once)
   useEffect(() => {
-  if (!command) return;
-  let cancelled = false;
-
-  (async () => {
-    try {
-      const res = await axios.post(
-        "http://localhost:8001/api/user/ask",
-        { command },
-        { withCredentials: true }
-      );
-      if (cancelled) return;
-      const data = res.data;
-      speak(data.response);
-      if (data.url) {
-        window.open(data.url, "_blank", "noopener,noreferrer");
-      }
-    } catch (err) {
-      console.error("Assistant error:", err);
-      speak("Sorry, something went wrong.");
-    }
-  })();
-
-  return () => {
-    cancelled = true;
-  };
-},[command , speak]);
-  
-
-  // send recognized command to backend
-  useEffect(() => {
+    if (!command) return;
     const sendCommand = async () => {
-      if (!command) return;
       try {
         const res = await axios.post(
           "http://localhost:8001/api/user/ask",
@@ -77,8 +48,8 @@ const Dashboard = () => {
         );
         const data = res.data;
         speak(data.response);
-        if (data.url) {
-          window.open(data.url, '_blank');
+        if (data.url && typeof data.url === "string" && data.url.startsWith("http")) {
+          window.open(data.url, "_blank", "noopener,noreferrer");
         }
       } catch (err) {
         console.error("Assistant error:", err);
